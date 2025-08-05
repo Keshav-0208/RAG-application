@@ -1,0 +1,14 @@
+[
+  {
+    "query": "What is the peak outdoor brightness of the iPhone 15's display, and what notable feature is it missing according to critics?",
+    "ground_truth_answer": "The iPhone 15's Super Retina XDR display has a peak outdoor brightness of 2,000 nits. However, critics lament the continued absence of a 120Hz ProMotion refresh rate."
+  },
+  {
+    "query": "What is the reported battery life for the MacBook Pro 16 with Apple Silicon?",
+    "ground_truth_answer": "Power users report that the MacBook Pro 16 with Apple Silicon achieves a battery life of 15 to 22 hours on a single charge, depending on the workload and settings."
+  },
+  {
+    "query": "How do the Xbox Series X and PlayStation 5 differ in their approach to storage expansion?",
+    "ground_truth_answer": "The Xbox Series X uses proprietary expansion cards for storage upgrades, offering plug-and-play convenience at a premium. In contrast, the PlayStation 5 uses a standard M.2 NVMe SSD bay, allowing users more flexibility and cost-efficiency by choosing from compatible third-party drives."
+  }
+]
