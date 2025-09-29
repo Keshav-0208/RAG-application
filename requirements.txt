@@ -8,3 +8,4 @@ numpy
 datasets
 langchain-groq
 langchain
+langchain-community
