@@ -8,5 +8,8 @@ numpy
 datasets
 langchain-groq
 langchain
-langchain-community
 ragas
+torch>=2.0
+transformers>=4.30
+sentence-transformers>=2.2
+langchain-community>=0.3.30
