@@ -1,0 +1,38 @@
+[
+  {
+    "query": "What is the peak outdoor brightness of the iPhone 15's display, and what notable feature is it missing according to critics?",
+    "ground_truth_answer": "The iPhone 15's Super Retina XDR display has a peak outdoor brightness of 2,000 nits. However, critics lament the continued absence of a 120Hz ProMotion refresh rate."
+  },
+  {
+    "query": "What are the specifications of the triple-lens camera system on the Samsung Galaxy S23?",
+    "ground_truth_answer": "The Samsung Galaxy S23 is equipped with a triple-lens camera system consisting of a 50MP main wide lens, a 12MP ultra-wide lens, and a 10MP telephoto lens that provides a true 3x optical zoom."
+  },
+  {
+    "query": "What unique charging feature does the Samsung Galaxy S23 offer that the iPhone 15 does not?",
+    "ground_truth_answer": "The Samsung Galaxy S23 has the advantage of reverse wireless charging, allowing it to function as a wireless battery bank to charge other devices like earbuds or smartwatches."
+  },
+  {
+    "query": "What are the key design features of the Dell XPS 15 mentioned in the document?",
+    "ground_truth_answer": "The Dell XPS 15 features an InfinityEdge display with impossibly thin bezels on its 15.6-inch frame. It also has carbon fiber palm rests for a cool, feather-touch feel."
+  },
+  {
+    "query": "What is the reported battery life for the MacBook Pro 16 with Apple Silicon?",
+    "ground_truth_answer": "Power users report that the MacBook Pro 16 with Apple Silicon achieves a battery life of 15 to 22 hours on a single charge, depending on the workload and settings."
+  },
+  {
+    "query": "How does the Dell XPS 15's approach to hardware upgrades differ from many modern laptops?",
+    "ground_truth_answer": "Unlike many modern laptops with soldered components, the Dell XPS 15 is designed for upgradability, allowing users to expand the RAM and replace the SSD after purchase."
+  },
+  {
+    "query": "What is a signature distinction of the PlayStation 5, and what are some examples of its exclusive games?",
+    "ground_truth_answer": "A signature distinction of the PlayStation 5 is its robust foundation of exclusive titles from Sony's first-party studios, known for narrative ambition. Examples of these games include Spider-Man 2, God of War Ragnarok, and Horizon Forbidden West."
+  },
+  {
+    "query": "What are the key features of the PlayStation 5's DualSense controller that enhance immersion?",
+    "ground_truth_answer": "The PlayStation 5's DualSense controller enhances immersion with features such as adaptive triggers that provide nuanced resistance, refined haptic feedback for a more tactile experience, and a built-in microphone and speaker."
+  },
+  {
+    "query": "How do the Xbox Series X and PlayStation 5 differ in their approach to storage expansion?",
+    "ground_truth_answer": "The Xbox Series X uses proprietary expansion cards for storage upgrades, offering plug-and-play convenience at a premium. In contrast, the PlayStation 5 uses a standard M.2 NVMe SSD bay, allowing users more flexibility and cost-efficiency by choosing from compatible third-party drives."
+  }
+]

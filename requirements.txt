@@ -1,0 +1,7 @@
+streamlit
+faiss-cpu
+transformers
+torch
+groq
+scikit-learn
+numpy
