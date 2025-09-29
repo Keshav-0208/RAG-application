@@ -7,5 +7,4 @@ scikit-learn
 numpy
 datasets
 langchain-groq
-langchain.docstore.document
-langchain.embeddings 
+langchain
