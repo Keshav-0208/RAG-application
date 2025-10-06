@@ -161,7 +161,7 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
     st.chat_message("user").markdown(prompt)
 
     with st.spinner("Thinking..."):
-        retrieved_docs = index.search(prompt, k=3)
+        retrieved_docs = index.search(prompt, k=6)
         retrieved_context_str = "\n\n".join([doc.page_content for doc in retrieved_docs])
 
         prompt_messages = [
