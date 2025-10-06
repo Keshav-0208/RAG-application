@@ -110,7 +110,7 @@ with st.sidebar:
                         {"role": "system", "content": "You are a helpful product comparison assistant."},
                         {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{question}"}
                     ]
-                    response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
+                    response = client.chat.completions.create(messages=full_prompt, model="llama-3.1-8b-instant")
                     reply = response.choices[0].message.content or ""
                     answers.append(reply)
                     time.sleep(3)
