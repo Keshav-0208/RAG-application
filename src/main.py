@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import json
 from config import GROQ_API_KEY, EMBEDDING_MODEL_NAME
 from groq import Groq
@@ -86,18 +86,17 @@ with st.sidebar:
         Click to run a comprehensive evaluation using your `eval_data.json` file.
     """)
 
-    # ✅ UPDATED RAGAS EVALUATION SECTION
     if st.button("Run RAGAS Evaluation"):
         with st.spinner("Running RAGAS Evaluation... Please wait."):
             try:
                 # 1. Load evaluation data
                 with open("src/eval_data.json", "r") as f:
                     eval_data = json.load(f)
-
+                
                 eval_questions = [item["query"] for item in eval_data]
                 eval_ground_truths = [item["ground_truth_answer"] for item in eval_data]
 
-                # 2. Generate answers and retrieve contexts
+                # 2. Generate answers and retrieve contexts (Improved version)
                 answers = []
                 contexts = []
 
@@ -128,21 +127,26 @@ with st.sidebar:
                     answers.append(reply)
                     time.sleep(2)
 
-                print(f"\nEmpty answers count: {sum(1 for a in answers if not a)}")
-                print(f"Empty contexts count: {sum(1 for c in contexts if not c)}")
+                # Debug check for empty answers
+                print("Empty answers count:", sum(1 for a in answers if not a.strip()))
+                print("Empty contexts count:", sum(1 for c in contexts if len(c) == 0))
 
-                # 3. Structure data for RAGAS evaluation
+                # 3. Structure data for evaluation
                 data_samples = {
                     "question": eval_questions,
                     "answer": answers,
                     "contexts": contexts,
-                    "ground_truth": eval_ground_truths,
+                    "ground_truth": eval_ground_truths
                 }
                 dataset = Dataset.from_dict(data_samples)
 
-                # 4. Define models for RAGAS
-                groq_llm = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
-
+                # 4. Define LLM and Embedding models for RAGAS
+                groq_llm = ChatGroq(
+                    model="llama-3.1-8b-instant",
+                    api_key=GROQ_API_KEY,
+                    temperature=0
+                )
+                
                 # 5. Initialize metrics
                 metrics = [
                     Faithfulness(),
@@ -151,17 +155,13 @@ with st.sidebar:
                     ContextPrecision(),
                 ]
 
-                # 6. Run RAGAS with safe parallelism (prevents timeouts)
-                print("\n⚙️ Starting RAGAS evaluation with safe parallelism...")
+                # 6. Run evaluation
                 result = evaluate(
-                    dataset=dataset,
+                    dataset=dataset, 
                     metrics=metrics,
                     llm=groq_llm,
-                    embeddings=embedder,
-                    raise_exceptions=False,   # prevents crash on timeout
-                    max_workers=1              # avoids Groq overload
+                    embeddings=embedder
                 )
-
                 st.session_state.ragas_result = result.to_pandas()
 
             except Exception as e:
@@ -191,19 +191,16 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
 
         prompt_messages = [
             {"role": "system", "content": "You are a helpful product comparison assistant. "
-             "Use the provided context and conversation history to answer the user's query precisely. "
-             "If the context does not contain the answer, say that you don't have enough information."},
+            "Use the provided context and conversation history to answer the user's query precisely. "
+            "If the context does not contain the answer, say that you don't have enough information."},
             {"role": "user", "content": f"Context:\n{retrieved_context_str}\n\nQuestion:\n{prompt}"}
         ]
-
+        
         history = st.session_state.messages[:-1]
         full_prompt = history + prompt_messages
 
         try:
-            response = client.chat.completions.create(
-                messages=full_prompt,
-                model="openai/gpt-oss-120b"
-            )
+            response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
             reply = response.choices[0].message.content
         except Exception as e:
             reply = f"An error occurred: {e}"
