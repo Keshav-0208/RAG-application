@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import json
 from config import GROQ_API_KEY, EMBEDDING_MODEL_NAME
 from groq import Groq
@@ -86,86 +86,86 @@ with st.sidebar:
         Click to run a comprehensive evaluation using your `eval_data.json` file.
     """)
 
-if st.button("Run RAGAS Evaluation"):
-    with st.spinner("Running RAGAS Evaluation... Please wait."):
-        try:
-            # 1. Load evaluation data
-            with open("src/eval_data.json", "r") as f:
-                eval_data = json.load(f)
+    # ✅ UPDATED RAGAS EVALUATION SECTION
+    if st.button("Run RAGAS Evaluation"):
+        with st.spinner("Running RAGAS Evaluation... Please wait."):
+            try:
+                # 1. Load evaluation data
+                with open("src/eval_data.json", "r") as f:
+                    eval_data = json.load(f)
 
-            eval_questions = [item["query"] for item in eval_data]
-            eval_ground_truths = [item["ground_truth_answer"] for item in eval_data]
+                eval_questions = [item["query"] for item in eval_data]
+                eval_ground_truths = [item["ground_truth_answer"] for item in eval_data]
 
-            # 2. Generate answers and retrieve contexts
-            answers = []
-            contexts = []
+                # 2. Generate answers and retrieve contexts
+                answers = []
+                contexts = []
 
-            for question in eval_questions:
-                retrieved_docs = index.search(question, k=6)
-                retrieved_contexts = [doc.page_content for doc in retrieved_docs]
-                contexts.append(retrieved_contexts)
-                context_str = "\n\n".join(retrieved_contexts)
+                for question in eval_questions:
+                    retrieved_docs = index.search(question, k=6)
+                    retrieved_contexts = [doc.page_content for doc in retrieved_docs]
+                    contexts.append(retrieved_contexts)
+                    context_str = "\n\n".join(retrieved_contexts)
 
-                full_prompt = [
-                    {"role": "system", "content": "You are a helpful product comparison assistant."},
-                    {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{question}"}
+                    full_prompt = [
+                        {"role": "system", "content": "You are a helpful product comparison assistant."},
+                        {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{question}"}
+                    ]
+
+                    try:
+                        response = client.chat.completions.create(
+                            messages=full_prompt,
+                            model="llama-3.1-8b-instant"
+                        )
+                        reply = response.choices[0].message.content.strip()
+                    except Exception as e:
+                        reply = f"[Error generating answer: {e}]"
+
+                    if not reply:
+                        reply = "[No response from model]"
+
+                    print(f"DEBUG - Q: {question[:60]} → A: {reply[:60]}")
+                    answers.append(reply)
+                    time.sleep(2)
+
+                print(f"\nEmpty answers count: {sum(1 for a in answers if not a)}")
+                print(f"Empty contexts count: {sum(1 for c in contexts if not c)}")
+
+                # 3. Structure data for RAGAS evaluation
+                data_samples = {
+                    "question": eval_questions,
+                    "answer": answers,
+                    "contexts": contexts,
+                    "ground_truth": eval_ground_truths,
+                }
+                dataset = Dataset.from_dict(data_samples)
+
+                # 4. Define models for RAGAS
+                groq_llm = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
+
+                # 5. Initialize metrics
+                metrics = [
+                    Faithfulness(),
+                    AnswerCorrectness(),
+                    ContextRecall(),
+                    ContextPrecision(),
                 ]
 
-                try:
-                    response = client.chat.completions.create(
-                        messages=full_prompt,
-                        model="llama-3.1-8b-instant"
-                    )
-                    reply = response.choices[0].message.content.strip()
-                except Exception as e:
-                    reply = f"[Error generating answer: {e}]"
+                # 6. Run RAGAS with safe parallelism (prevents timeouts)
+                print("\n⚙️ Starting RAGAS evaluation with safe parallelism...")
+                result = evaluate(
+                    dataset=dataset,
+                    metrics=metrics,
+                    llm=groq_llm,
+                    embeddings=embedder,
+                    raise_exceptions=False,   # prevents crash on timeout
+                    max_workers=1              # avoids Groq overload
+                )
 
-                if not reply:
-                    reply = "[No response from model]"
+                st.session_state.ragas_result = result.to_pandas()
 
-                print(f"DEBUG - Q: {question[:60]} → A: {reply[:60]}")
-                answers.append(reply)
-                time.sleep(2)
-
-            print(f"\nEmpty answers count: {sum(1 for a in answers if not a)}")
-            print(f"Empty contexts count: {sum(1 for c in contexts if not c)}")
-
-            # 3. Structure data for RAGAS evaluation
-            data_samples = {
-                "question": eval_questions,
-                "answer": answers,
-                "contexts": contexts,
-                "ground_truth": eval_ground_truths,
-            }
-            dataset = Dataset.from_dict(data_samples)
-
-            # 4. Define models for RAGAS
-            groq_llm = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
-
-            # 5. Initialize metrics
-            metrics = [
-                Faithfulness(),
-                AnswerCorrectness(),
-                ContextRecall(),
-                ContextPrecision(),
-            ]
-
-            # 6. Run RAGAS with reduced parallelism to prevent timeout
-            print("\n⚙️ Starting RAGAS evaluation with safe parallelism...")
-            result = evaluate(
-                dataset=dataset,
-                metrics=metrics,
-                llm=groq_llm,
-                embeddings=embedder,
-                raise_exceptions=False,   # prevents crashes on timeout
-                max_workers=1              # prevents Groq API overload
-            )
-
-            st.session_state.ragas_result = result.to_pandas()
-
-        except Exception as e:
-            st.error(f"RAGAS Evaluation Error: {e}", icon="🚨")
-
+            except Exception as e:
+                st.error(f"RAGAS Evaluation Error: {e}", icon="🚨")
 
     # Display stored RAGAS result if it exists
     if "ragas_result" in st.session_state:
@@ -191,16 +191,19 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
 
         prompt_messages = [
             {"role": "system", "content": "You are a helpful product comparison assistant. "
-            "Use the provided context and conversation history to answer the user's query precisely. "
-            "If the context does not contain the answer, say that you don't have enough information."},
+             "Use the provided context and conversation history to answer the user's query precisely. "
+             "If the context does not contain the answer, say that you don't have enough information."},
             {"role": "user", "content": f"Context:\n{retrieved_context_str}\n\nQuestion:\n{prompt}"}
         ]
-        
+
         history = st.session_state.messages[:-1]
         full_prompt = history + prompt_messages
 
         try:
-            response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
+            response = client.chat.completions.create(
+                messages=full_prompt,
+                model="openai/gpt-oss-120b"
+            )
             reply = response.choices[0].message.content
         except Exception as e:
             reply = f"An error occurred: {e}"
