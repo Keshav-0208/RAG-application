@@ -110,7 +110,7 @@ with st.sidebar:
                         {"role": "system", "content": "You are a helpful product comparison assistant."},
                         {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{question}"}
                     ]
-                    response = client.chat.completions.create(messages=full_prompt, model="whisper-large-v3-turbo")
+                    response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
                     reply = response.choices[0].message.content or ""
                     answers.append(reply)
                     time.sleep(3)
@@ -120,7 +120,7 @@ with st.sidebar:
                 dataset = Dataset.from_dict(data_samples)
 
                 # 4. Defining LLM and Embedding models for RAGAS
-                groq_llm = ChatGroq(model="whisper-large-v3-turbo", api_key=GROQ_API_KEY)
+                groq_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=GROQ_API_KEY)
                 
                 # 5. Initializing metrics plainly
                 metrics = [
@@ -175,7 +175,7 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
         full_prompt = history + prompt_messages
 
         try:
-            response = client.chat.completions.create(messages=full_prompt, model="whisper-large-v3-turbo")
+            response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
             reply = response.choices[0].message.content
         except Exception as e:
             reply = f"An error occurred: {e}"
