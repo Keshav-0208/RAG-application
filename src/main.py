@@ -120,7 +120,7 @@ with st.sidebar:
                 dataset = Dataset.from_dict(data_samples)
 
                 # 4. Defining LLM and Embedding models for RAGAS
-                groq_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=GROQ_API_KEY)
+                groq_llm = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
                 
                 # 5. Initializing metrics plainly
                 metrics = [
