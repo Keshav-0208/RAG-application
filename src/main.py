@@ -18,7 +18,7 @@ from ragas.metrics import (
     ContextPrecision,
 )
 
-#custom modules
+# Custom modules
 from document_processing import process_documents
 from index import FAISSIndex
 from config import GROQ_API_KEY
@@ -32,8 +32,7 @@ if "chat_history" not in st.session_state:
 if "chat_name" not in st.session_state:
     st.session_state.chat_name = ""
 
-
-#Groq Client and RAG Components
+# Groq Client and RAG Components
 client = Groq(api_key=GROQ_API_KEY)
 
 @st.cache_resource
@@ -48,7 +47,7 @@ def load_and_index():
 
 index, embedder = load_and_index()
 
-#Sidebar for Control, History, and Evaluation
+# Sidebar for Control, History, and Evaluation
 with st.sidebar:
     st.title("Control Panel")
 
@@ -97,32 +96,58 @@ with st.sidebar:
                 eval_questions = [item["query"] for item in eval_data]
                 eval_ground_truths = [item["ground_truth_answer"] for item in eval_data]
 
-                # 2. Generate answers and retrieve contexts
+                # 2. Generate answers and retrieve contexts (Improved version)
                 answers = []
                 contexts = []
+
                 for question in eval_questions:
                     retrieved_docs = index.search(question, k=6)
                     retrieved_contexts = [doc.page_content for doc in retrieved_docs]
-                    context_str = "\n\n".join(retrieved_contexts)
                     contexts.append(retrieved_contexts)
+                    context_str = "\n\n".join(retrieved_contexts)
 
                     full_prompt = [
                         {"role": "system", "content": "You are a helpful product comparison assistant."},
                         {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{question}"}
                     ]
-                    response = client.chat.completions.create(messages=full_prompt, model="llama-3.1-8b-instant")
-                    reply = response.choices[0].message.content or ""
+
+                    try:
+                        response = client.chat.completions.create(
+                            messages=full_prompt,
+                            model="llama-3.1-8b-instant"
+                        )
+                        reply = response.choices[0].message.content.strip()
+                    except Exception as e:
+                        reply = f"[Error generating answer: {e}]"
+
+                    if not reply:
+                        reply = "[No response from model]"
+
+                    print(f"DEBUG - Q: {question[:60]} → A: {reply[:60]}")
                     answers.append(reply)
-                    time.sleep(3)
+                    time.sleep(2)
+
+                # Debug check for empty answers
+                print("Empty answers count:", sum(1 for a in answers if not a.strip()))
+                print("Empty contexts count:", sum(1 for c in contexts if len(c) == 0))
 
                 # 3. Structure data for evaluation
-                data_samples = {"question": eval_questions, "answer": answers, "contexts": contexts, "ground_truth": eval_ground_truths}
+                data_samples = {
+                    "question": eval_questions,
+                    "answer": answers,
+                    "contexts": contexts,
+                    "ground_truth": eval_ground_truths
+                }
                 dataset = Dataset.from_dict(data_samples)
 
-                # 4. Defining LLM and Embedding models for RAGAS
-                groq_llm = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
+                # 4. Define LLM and Embedding models for RAGAS
+                groq_llm = ChatGroq(
+                    model="llama-3.1-8b-instant",
+                    api_key=GROQ_API_KEY,
+                    temperature=0
+                )
                 
-                # 5. Initializing metrics plainly
+                # 5. Initialize metrics
                 metrics = [
                     Faithfulness(),
                     AnswerCorrectness(),
@@ -130,7 +155,7 @@ with st.sidebar:
                     ContextPrecision(),
                 ]
 
-                # 6. Running evaluation, passing models to the evaluate call
+                # 6. Run evaluation
                 result = evaluate(
                     dataset=dataset, 
                     metrics=metrics,
@@ -142,7 +167,7 @@ with st.sidebar:
             except Exception as e:
                 st.error(f"RAGAS Evaluation Error: {e}", icon="🚨")
 
-    # Display the stored RAGAS result if it exists
+    # Display stored RAGAS result if it exists
     if "ragas_result" in st.session_state:
         st.markdown("---")
         st.subheader("RAGAS Evaluation Results")
@@ -175,7 +200,7 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
         full_prompt = history + prompt_messages
 
         try:
-            response = client.chat.completions.create(messages=full_prompt, model="llama-3.1-8b-instant")
+            response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
             reply = response.choices[0].message.content
         except Exception as e:
             reply = f"An error occurred: {e}"
