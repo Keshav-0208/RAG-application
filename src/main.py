@@ -175,7 +175,7 @@ if prompt := st.chat_input("e.g., 'Compare the display quality of the iPhone 15 
         full_prompt = history + prompt_messages
 
         try:
-            response = client.chat.completions.create(messages=full_prompt, model="openai/gpt-oss-120b")
+            response = client.chat.completions.create(messages=full_prompt, model="llama-3.1-8b-instant")
             reply = response.choices[0].message.content
         except Exception as e:
             reply = f"An error occurred: {e}"
